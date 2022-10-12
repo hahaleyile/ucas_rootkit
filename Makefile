@@ -1,8 +1,8 @@
-ucas-objs := main.o
+ucas-y := main.o module.o backdoor.o
 obj-m += ucas.o
 PWD := $(CURDIR)
 EXTRA_CFLAGS += -g -O0
-PASSWORD = ${ssh_password}
+PASSWORD = ${sudo_password}
 
 .PHONY: module clean install uninstall
 
