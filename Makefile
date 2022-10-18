@@ -1,4 +1,4 @@
-ucas-y := main.o module.o backdoor.o hook.o
+ucas-y := main.o module.o backdoor.o hook.o process.o data.o
 obj-m += ucas.o
 PWD := $(CURDIR)
 EXTRA_CFLAGS += -g -O0

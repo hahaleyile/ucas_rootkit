@@ -22,19 +22,20 @@
     .ops={ \
         .func=FtraceHandle, \
         .flags=FTRACE_OPS_FL_SAVE_REGS | \
+               FTRACE_OPS_FL_IPMODIFY | \
                FTRACE_OPS_FL_RECURSION_SAFE \
        COMMENT(不添加这行会导致内核崩溃，好像是多核会修改堆栈数据)\
         } \
 }
 
 struct ftrace_hook {
-    long (*function)(struct pt_regs *regs);
+    long (*function)(struct pt_regs *regs, long (*orig_func)(const struct pt_regs *));
 
     unsigned char *hook_func_name;
     struct ftrace_ops ops;
 };
 
-long HookMkdir(struct pt_regs *regs);
+long CleanFunc(const struct pt_regs *regs);
 
 void FtraceHandle(unsigned long ip, unsigned long parent_ip,
                   struct ftrace_ops *op, struct pt_regs *regs);

