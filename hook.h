@@ -35,7 +35,10 @@ struct ftrace_hook {
     struct ftrace_ops ops;
 };
 
-long CleanFunc(const struct pt_regs *regs);
+extern volatile long return_value;
+extern volatile unsigned long jump_func;
+
+unsigned long CleanFunc(const struct pt_regs *regs);
 
 void FtraceHandle(unsigned long ip, unsigned long parent_ip,
                   struct ftrace_ops *op, struct pt_regs *regs);

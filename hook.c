@@ -8,7 +8,8 @@
 #include <asm/unwind.h>
 #include <linux/version.h>
 
-static long return_value = 0;
+volatile long return_value;
+volatile unsigned long jump_func;
 
 // 用户空间的寄存器会以pt_regs结构体的形式，存储在当前内核栈空间的最高地址处
 // 获取用户线程原本的寄存器保存位置
@@ -35,7 +36,7 @@ void FtraceHandle(unsigned long ip, unsigned long parent_ip,
     long result = hook->function(user_regs, orig_func);
     if (result) {
         return_value = result;
-        regs->ip = (unsigned long) CleanFunc;
+        regs->ip = (unsigned long) jump_func;
     }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
@@ -44,7 +45,7 @@ void FtraceHandle(unsigned long ip, unsigned long parent_ip,
 }
 
 
-long CleanFunc(const struct pt_regs *regs) {
+unsigned long CleanFunc(const struct pt_regs *regs) {
     return return_value;
 }
 
