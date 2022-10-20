@@ -2,9 +2,9 @@
 // Created by black on 22-10-17.
 //
 
+#include <linux/kernel.h>
 #include "process.h"
 #include "data.h"
-#include <linux/kernel.h>
 #include "hook.h"
 
 long HookKill(struct pt_regs *regs, long (*orig_func)(const struct pt_regs *)) {
