@@ -76,5 +76,5 @@ hook 的方法选用 ftrace hook，通过 `ftrace_set_filter` 指定需要挂钩
 ## 参考资料
 
 * Makefile, Kbuild 请参考这些链接 [Linux Kernel Makefiles](https://docs.kernel.org/kbuild/makefiles.html) [Building External Modules](https://docs.kernel.org/kbuild/modules.html)
-* ftrace hook [Using ftrace to hook to functions](https://01.org/linuxgraphics/gfx-docs/drm/trace/ftrace-uses.html)
+* ftrace hook [Using ftrace to hook to functions](https://web.archive.org/web/20220916014120/https://01.org/linuxgraphics/gfx-docs/drm/trace/ftrace-uses.html)
 * [Linux Syscall Reference ](https://syscalls64.paolostivanin.com/)
