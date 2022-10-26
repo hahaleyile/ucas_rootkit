@@ -47,7 +47,7 @@ hook 的方法选用 ftrace hook，通过 `ftrace_set_filter` 指定需要挂钩
 好在调用系统调用时用户会将调用的参数压入栈中，这时我们可以读取用户栈来获取到参数。
 另外说一句，asmlinkage 只对 32 位系统有用，64 位系统下它的宏定义为空。
 
-我设计的 ftrace hook 很灵和，既可以不改 ip 返回原函数，也可以改 ip 跳过原函数，判断逻辑就是挂钩函数的返回值是否为 0。
+我设计的 ftrace hook 很灵活，既可以不改 ip 返回原函数，也可以改 ip 跳过原函数，判断逻辑就是挂钩函数的返回值是否为 0。
 同时，如果改 ip 跳过原函数，则下一条的地址需要通过全局变量 `jump_func` 进行指定。
 
 数据结构采用了内核定义好的链表，因为它是非常可靠且线程安全的。
@@ -76,5 +76,5 @@ hook 的方法选用 ftrace hook，通过 `ftrace_set_filter` 指定需要挂钩
 ## 参考资料
 
 * Makefile, Kbuild 请参考这些链接 [Linux Kernel Makefiles](https://docs.kernel.org/kbuild/makefiles.html) [Building External Modules](https://docs.kernel.org/kbuild/modules.html)
-* ftrace hook [Using ftrace to hook to functions](https://01.org/linuxgraphics/gfx-docs/drm/trace/ftrace-uses.html)
+* ftrace hook [Using ftrace to hook to functions](https://docs.kernel.org/trace/ftrace-uses.html)
 * [Linux Syscall Reference ](https://syscalls64.paolostivanin.com/)
